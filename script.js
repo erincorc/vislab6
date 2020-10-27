@@ -22,8 +22,12 @@ let unemp = d3.csv('unemployment.csv', d3.autoType).then( d => {
         total_count += d.Information
         total_count += d['Mining and Extraction']
         d['total'] = total_count // add total count to dataset
-    }) 
-    
+        let dat = d.date
+        console.log(dat.substr(0,4))
+    })
+    console.log(d)
+    updatedData = d
+    AreaChart('.chart', d)
 });
 
 // input: selector for a chart container e.g., ".chart"
@@ -42,24 +46,44 @@ function AreaChart(container){
     
     const yScale = d3.scaleLinear()
         .range([height, 0])
+
+    const xAxis = d3.axisBottom()
+        .scale(xScale)
     
-    const path = d3.line()
-        .attr('class', 'path-chart')
+    const yAxis = d3.axisLeft()
+        .scale(yScale)
+    
+    let line = d3.line()
+
+    const path = d3.select('.chart')
+        .append('path')
+        .attr("d", line(d))
+        .attr('stroke', 'black')
 
     svg.append("g")
-        .attr("class", "x-axis")
+        .attr("class", "x-axis axis")
         .attr("transform", `translate(0, ${height})`)
         .call(xAxis)
     
     svg.append("g")
-        .attr("class", "y-axis")
+        .attr("class", "y-axis axis")
         .call(yAxis)
 
 	function update(data){ 
 
         // update scales, encodings, axes (use the total count)
-        xScale.domain([0, data.map(d => d.date)])
+        xScale.domain([0, max(data.map(d => d.date))])
         yScale.domain([0, data.map(d => d.total)])
+
+        let area = d3.area()
+            .x(data => x(data.date))
+            .y1(data => y(data.total))
+            .y0((y0));
+        
+        d3.select('.path-chart')
+            .datum(data)
+            .attr("d", area)
+
 		
 	}
 
@@ -67,3 +91,6 @@ function AreaChart(container){
 		update // ES6 shorthand for "update": update
 	};
 }
+
+const c = AreaChart();
+c.update();
