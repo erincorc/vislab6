@@ -1,9 +1,10 @@
-const margin = ({top: 20, right: 35, bottom: 20, left: 40});
-const width = 960 - margin.left - margin.right;
-const height = 500 - margin.top - margin.bottom;
+const margin = ({top: 20, right: 35, bottom: 20, left: 40})
+const width = 960 - margin.left - margin.right
+const height = 500 - margin.top - margin.bottom
 
 let unemp = d3.csv('unemployment.csv', d3.autoType).then( d => {
-    console.log(d)
+    console.log(d);
+    dataset = d;
     total_count = 0
     d.forEach(function(d) {
         total_count = 0
@@ -22,69 +23,71 @@ let unemp = d3.csv('unemployment.csv', d3.autoType).then( d => {
         total_count += d.Information
         total_count += d['Mining and Extraction']
         d['total'] = total_count // add total count to dataset
-        let dat = d.date
-        console.log(dat.substr(0,4))
+     //   let dat = d.date
+     //   console.log(d.substr(0,4))
+        })
+    console.log(dataset)
+    const areaChart = AreaChart('.chart')
+    areaChart.update(dataset)
     })
-    console.log(d)
-    updatedData = d
-    AreaChart('.chart', d)
-});
+
+    const x = d3.scaleTime()
+        .range([0, width])
+
+    const y = d3.scaleLinear()
+        .range([height, 0])
 
 // input: selector for a chart container e.g., ".chart"
 function AreaChart(container){
 
-    // initialization 
+    // INITIALIZATION
+
     // create SVG with margin convention
-    const svg = d3.select('.chart').append('svg')
+    const svg = d3.selectAll('.chart').append('svg')
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    const xScale = d3.scaleTime()
-        .range([0, width])
-    
-    const yScale = d3.scaleLinear()
-        .range([height, 0])
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 
     const xAxis = d3.axisBottom()
-        .scale(xScale)
-    
+        .scale(x)
+        .ticks(10)
+
     const yAxis = d3.axisLeft()
-        .scale(yScale)
-    
-    let line = d3.line()
+        .scale(y)
+        .ticks()
 
-    const path = d3.select('.chart')
-        .append('path')
-        .attr("d", line(d))
-        .attr('stroke', 'black')
-
-    svg.append("g")
-        .attr("class", "x-axis axis")
+    svg.select('.x-axis')
         .attr("transform", `translate(0, ${height})`)
         .call(xAxis)
-    
-    svg.append("g")
-        .attr("class", "y-axis axis")
+
+    svg.select('.y-axis')
         .call(yAxis)
 
+    // Create a single path for the area and assign a class name so that you can select it in update
+
 	function update(data){ 
-
+        //  Update the domains of the scales using the data passed to update
         // update scales, encodings, axes (use the total count)
-        xScale.domain([0, max(data.map(d => d.date))])
-        yScale.domain([0, data.map(d => d.total)])
 
-        let area = d3.area()
-            .x(data => x(data.date))
-            .y1(data => y(data.total))
-            .y0((y0));
+        svg.append("path")
+            .attr('class', 'path-class')
         
-        d3.select('.path-chart')
-            .datum(data)
-            .attr("d", area)
+        x.domain(d3.extent(data, d => d.date))
 
-		
+        y.domain(d3.extent(data, d => d.total))
+
+        // Create an area generator using d3.area
+        let area = d3.area()
+            .x(d => x(d.date))
+            .y(d => y(d.total))
+            .y0(function () {return y.range()[0]})
+        
+        d3.select('.path-class')
+            .datum(data)
+            .attr("d", area);
+
+
 	}
 
 	return {
@@ -92,5 +95,3 @@ function AreaChart(container){
 	};
 }
 
-const c = AreaChart();
-c.update();
