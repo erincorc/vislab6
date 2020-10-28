@@ -1,6 +1,6 @@
 const margin = ({top: 20, right: 35, bottom: 20, left: 40})
-const width = 960 - margin.left - margin.right
-const height = 500 - margin.top - margin.bottom
+const width = 800 - margin.left - margin.right
+const height = 200 - margin.top - margin.bottom
 
 d3.csv('unemployment.csv', d3.autoType).then( d => {
     console.log(d);
@@ -37,6 +37,15 @@ d3.csv('unemployment.csv', d3.autoType).then( d => {
     let y = d3.scaleLinear()
         .range([height, 0])
 
+    const xAxis = d3.axisBottom()
+        .scale(x)
+        .ticks(10)
+
+    const yAxis = d3.axisLeft()
+        .scale(y)
+        .ticks(10)
+
+
 // input: selector for a chart container e.g., ".chart"
 function AreaChart(container){
 
@@ -48,26 +57,10 @@ function AreaChart(container){
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-
-    const xAxis = d3.axisBottom()
-        .scale(x)
-        .ticks(10)
-
-    const yAxis = d3.axisLeft()
-        .scale(y)
-        .ticks()
-
-    svg.select('.x-axis')
-        .attr("transform", `translate(0, ${height})`)
-        .call(xAxis)
-
-    svg.select('.y-axis')
-        .call(yAxis)
-
+    
+    // Create a single path for the area and assign a class name so that you can select it in update
     svg.append("path")
         .attr('class', 'path-class')
-
-    // Create a single path for the area and assign a class name so that you can select it in update
 
 	function update(data){ 
         //  Update the domains of the scales using the data passed to update
@@ -81,11 +74,19 @@ function AreaChart(container){
         let area = d3.area()
             .x(d => x(d.date))
             .y1(d => y(d.total))
-            .y0(function () {return y.range()[0]})
+            .y0(d => y.range()[0])
         
         d3.select('.path-class')
             .datum(data)
-            .attr("d", area);
+            .attr("d", area)
+
+        svg.select('.x-axis')
+            .attr("transform", `translate(0, ${height})`)
+            .call(xAxis)
+
+        svg.select('.y-axis')
+            .call(yAxis)
+        
 	}
 
 	return {
