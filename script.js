@@ -2,7 +2,7 @@ const margin = ({top: 20, right: 35, bottom: 20, left: 40})
 const width = 960 - margin.left - margin.right
 const height = 500 - margin.top - margin.bottom
 
-let unemp = d3.csv('unemployment.csv', d3.autoType).then( d => {
+d3.csv('unemployment.csv', d3.autoType).then( d => {
     console.log(d);
     dataset = d;
     total_count = 0
@@ -31,10 +31,10 @@ let unemp = d3.csv('unemployment.csv', d3.autoType).then( d => {
     areaChart.update(dataset)
     })
 
-    const x = d3.scaleTime()
+    let x = d3.scaleTime()
         .range([0, width])
 
-    const y = d3.scaleLinear()
+    let y = d3.scaleLinear()
         .range([height, 0])
 
 // input: selector for a chart container e.g., ".chart"
@@ -43,7 +43,7 @@ function AreaChart(container){
     // INITIALIZATION
 
     // create SVG with margin convention
-    const svg = d3.selectAll('.chart').append('svg')
+    const svg = d3.selectAll(container).append('svg')
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
@@ -64,15 +64,15 @@ function AreaChart(container){
     svg.select('.y-axis')
         .call(yAxis)
 
+    svg.append("path")
+        .attr('class', 'path-class')
+
     // Create a single path for the area and assign a class name so that you can select it in update
 
 	function update(data){ 
         //  Update the domains of the scales using the data passed to update
         // update scales, encodings, axes (use the total count)
 
-        svg.append("path")
-            .attr('class', 'path-class')
-        
         x.domain(d3.extent(data, d => d.date))
 
         y.domain(d3.extent(data, d => d.total))
@@ -80,18 +80,15 @@ function AreaChart(container){
         // Create an area generator using d3.area
         let area = d3.area()
             .x(d => x(d.date))
-            .y(d => y(d.total))
+            .y1(d => y(d.total))
             .y0(function () {return y.range()[0]})
         
         d3.select('.path-class')
             .datum(data)
             .attr("d", area);
-
-
 	}
 
 	return {
 		update // ES6 shorthand for "update": update
 	};
 }
-
