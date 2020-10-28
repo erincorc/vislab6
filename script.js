@@ -2,6 +2,7 @@ const margin = ({top: 20, right: 35, bottom: 20, left: 40})
 const width = 800 - margin.left - margin.right
 const height = 300 - margin.top - margin.bottom
 
+
 d3.csv('unemployment.csv', d3.autoType).then( d => {
     console.log(d);
     dataset = d;
@@ -31,21 +32,6 @@ d3.csv('unemployment.csv', d3.autoType).then( d => {
     areaChart.update(dataset)
     })
 
-    let x = d3.scaleTime()
-        .range([0, width])
-
-    let y = d3.scaleLinear()
-        .range([height, 0])
-
-    const xAxis = d3.axisBottom()
-        .scale(x)
-        .ticks(10)
-
-    const yAxis = d3.axisLeft()
-        .scale(y)
-        .ticks(10)
-
-
 
 // input: selector for a chart container e.g., ".chart"
 function AreaChart(container){
@@ -59,9 +45,23 @@ function AreaChart(container){
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 
+    const x = d3.scaleTime()
+        .range([0, width])
+
+    const y = d3.scaleLinear()
+        .range([height, 0])
+
+    const xAxis = d3.axisBottom()
+        .scale(x)
+        .ticks(10)
+
+    const yAxis = d3.axisLeft()
+        .scale(y)
+        .ticks(10)
+
     svg.append("g")
         .attr("class", "x-axis")
-        .attr("transform", `translate(0, ${height})`)
+    //    .attr("transform", `translate(0, ${height})`)
     
     svg.append("g")
         .attr("class", "y-axis")
@@ -70,13 +70,17 @@ function AreaChart(container){
     svg.append("path")
         .attr('class', 'path-class')
 
+    xAxis.ticks(10)
+    yAxis.ticks(8)
+    
+
 	function update(data){ 
         //  Update the domains of the scales using the data passed to update
         // update scales, encodings, axes (use the total count)
 
         x.domain(d3.extent(data, d => d.date))
 
-        y.domain(d3.extent(data, d => d.total))
+        y.domain([0, d3.max(data, d => d.total)])
 
         // Create an area generator using d3.area
         let area = d3.area()
@@ -90,7 +94,7 @@ function AreaChart(container){
             .attr("fill", "navy")
 
         svg.select('.x-axis')
-         //   .attr("transform", `translate(0, ${height})`)
+            .attr("transform", `translate(0, ${height})`)
             .call(xAxis)
 
         svg.select('.y-axis')
@@ -101,6 +105,9 @@ function AreaChart(container){
 		update // ES6 shorthand for "update": update
 	};
 }
+
+
+
 
 d3.csv('unemployment.csv', d3.autoType).then( d => {
     console.log(d);
@@ -131,7 +138,10 @@ d3.csv('unemployment.csv', d3.autoType).then( d => {
     stackedChart.update(dataset2)
     })
 
+
 function StackedAreaChart(container) {
+
+
 	// initialization
     const svg2 = d3.selectAll(container).append('svg')
         .attr("width", width + margin.left + margin.right)
@@ -139,30 +149,77 @@ function StackedAreaChart(container) {
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 
+
+    const x = d3.scaleTime()
+        .range([0, width])
+
+    const y = d3.scaleLinear()
+        .range([height, 0])
+
+    const xAxis = d3.axisBottom()
+        .scale(x)
+        .ticks(10)
+
+    const yAxis = d3.axisLeft()
+        .scale(y)
+        .ticks(10)
+
     const categories = d3.scaleOrdinal()
-        .range(d3.schemeTableau10)
+        .range(d3.schemeAccent)
 
     // x = scaleTime
     // y = scaleLinear
 
     svg2.append("g")
         .attr("class", "x-axis-stack2")
-        .attr("transform", `translate(0, ${height})`)
+      //  .attr("transform", `translate(0, ${height})`)
 
     svg2.append("g")
         .attr("class", "y-axis-stack2")
 
+    svg2.append('path')
+        .attr('class', 'stackpath')
+
 
 	function update(data){ 
+
+        const keys = data.columns.slice(1)
+
         let stack = d3.stack()
-            .keys(data.columns.slice(1,15))
+            .keys(keys)
             .order(d3.stackOrderNone)
             .offset(d3.stackOffsetNone);
+
+        let stacked = stack(data)
+
         console.log(data)
 
-        x.domain([0, d3.max(dataset2, d => d3.max())])
-        y.domain(d3.extent(dataset2, d => d.total))
-        categories.domain(d.extent(dataset2, d => d.keys))
+        x.domain(d3.extent(data, d => d.date))
+        y.domain([0, d3.max(stacked, c => d3.max(c, d => d[1]))])
+        categories.domain(keys)
+
+        const stackArea = d3.area()
+            .x(d => x(d.data.date))
+            .y0(d => y(d[0]))
+            .y1(d => y(d[1]))
+
+        const areas = svg2.selectAll('stack')
+            .data(stacked, d => d.key);
+
+        areas.enter()
+            .append('path')
+            .style('fill', d => categories(d.key))
+            .merge(areas)
+            .attr("d", stackArea)
+
+        areas.exit().remove()
+
+        svg2.select('.x-axis-stack2')
+            .attr("transform", `translate(0, ${height})`)
+            .call(xAxis)
+
+        svg2.select('.y-axis-stack2')
+            .call(yAxis)
 
     
 
