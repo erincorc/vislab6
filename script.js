@@ -57,6 +57,13 @@ function AreaChart(container){
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+    svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0, ${height})`)
+    
+    svg.append("g")
+        .attr("class", "y-axis")
     
     // Create a single path for the area and assign a class name so that you can select it in update
     svg.append("path")
@@ -81,12 +88,11 @@ function AreaChart(container){
             .attr("d", area)
 
         svg.select('.x-axis')
-            .attr("transform", `translate(0, ${height})`)
+         //   .attr("transform", `translate(0, ${height})`)
             .call(xAxis)
 
         svg.select('.y-axis')
             .call(yAxis)
-        
 	}
 
 	return {
