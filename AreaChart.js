@@ -2,7 +2,6 @@ const margin = ({top: 20, right: 35, bottom: 20, left: 40})
 const width = 900 - margin.left - margin.right
 const height = 200 - margin.top - margin.bottom
 
-
 // input: selector for a chart container e.g., ".chart"
 export default function AreaChart(container){
 
