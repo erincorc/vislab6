@@ -8,6 +8,8 @@ export default function AreaChart(container){
 
     // INITIALIZATION
 
+    const listeners = {brushed: null};
+
     // create SVG with margin convention
     const svg = d3.selectAll(container).append('svg')
         .attr("width", width + margin.left + margin.right)
@@ -29,6 +31,15 @@ export default function AreaChart(container){
         .scale(y)
         .ticks(10)
 
+    const brush = d3.brushX()
+        .extent([[0,0],[width,height]])
+        .on('brush', brushed)
+        .on('end', brushed)
+
+    svg.append("g")
+        .attr('class', 'brush')
+        .call(brush);
+
     svg.append("g")
         .attr("class", "x-axis")
     //    .attr("transform", `translate(0, ${height})`)
@@ -42,6 +53,15 @@ export default function AreaChart(container){
 
     xAxis.ticks(10)
     yAxis.ticks(8)
+
+    function brushed(event) {
+        if (event.selection) {
+          console.log("brushed", event.selection)
+          listeners["brushed"](event.selection.map(x.invert));
+        //  selection.map(x.invert)
+        }
+      }
+
     
 
 	function update(data){ 
@@ -69,9 +89,13 @@ export default function AreaChart(container){
 
         svg.select('.y-axis')
             .call(yAxis)
-	}
-
+    }
+    
+    function on(event, listener) {
+		listeners[event] = listener;
+  }
 	return {
-		update // ES6 shorthand for "update": update
-	}
+		update,
+		on
+}
 }
