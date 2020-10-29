@@ -63,6 +63,7 @@ export default function StackedAreaChart(container) {
 
 
 	function update(data){ 
+        
         stackdata = data;
         const keys=selected? [selected] : stackdata.columns.slice(1)
 
