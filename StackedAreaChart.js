@@ -1,6 +1,6 @@
 const margin = ({top: 20, right: 35, bottom: 20, left: 40})
 const width = 900 - margin.left - margin.right
-const height = 450 - margin.top - margin.bottom
+const height = 200 - margin.top - margin.bottom
 
 let stackdata;
 
