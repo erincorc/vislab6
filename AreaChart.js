@@ -1,6 +1,6 @@
 const margin = ({top: 20, right: 35, bottom: 20, left: 40})
 const width = 900 - margin.left - margin.right
-const height = 450 - margin.top - margin.bottom
+const height = 200 - margin.top - margin.bottom
 
 
 // input: selector for a chart container e.g., ".chart"
@@ -56,9 +56,8 @@ export default function AreaChart(container){
 
     function brushed(event) {
         if (event.selection) {
-          console.log("brushed", event.selection)
-          listeners["brushed"](event.selection.map(x.invert));
-        //  selection.map(x.invert)
+          listeners["brushed"](event.selection.map(x.invert))
+
         }
       }
 
@@ -97,5 +96,5 @@ export default function AreaChart(container){
 	return {
 		update,
 		on
-}
+    };
 }

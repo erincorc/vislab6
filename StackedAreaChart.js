@@ -7,13 +7,21 @@ let stackdata;
 
 export default function StackedAreaChart(container) {
 	// initialization
+    let selected = null, xDomain, data;
+    
     const svg2 = d3.selectAll(container).append('svg')
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     
-    let selected = null, xDomain, data;
+    svg2.append("clipPath")
+        .attr("id", "area")
+        .append("rect")
+        .attr("width", width )
+        .attr("height", height )
+        .attr("x", 0)
+        .attr("y", 0)
 
     const x = d3.scaleTime()
         .range([0, width])
@@ -21,19 +29,16 @@ export default function StackedAreaChart(container) {
     const y = d3.scaleLinear()
         .range([height, 0])
 
+    const categories = d3.scaleOrdinal()
+        .range(d3.schemeAccent)
+
     const xAxis = d3.axisBottom()
         .scale(x)
         .ticks(10)
 
     const yAxis = d3.axisLeft()
         .scale(y)
-        .ticks(10)
-
-    const categories = d3.scaleOrdinal()
-        .range(d3.schemeAccent)
-
-    // x = scaleTime
-    // y = scaleLinear
+       // .ticks(10)
 
     svg2.append("g")
         .attr("class", "x-axis-stack2")
@@ -41,14 +46,6 @@ export default function StackedAreaChart(container) {
 
     svg2.append("g")
         .attr("class", "y-axis-stack2")
-
-    svg2.append('path')
-        .attr('class', 'stackpath')
-
-    const tooltip = svg2.append('text')
-        .attr('x', 10)
-        .attr('y', 10)
-        .attr('font-size', 16)
 
     svg2.append("clipPath")
         .attr("id", "area")
@@ -58,9 +55,16 @@ export default function StackedAreaChart(container) {
         .attr("x", 0)
         .attr("y", 0);
 
+    const tooltip = svg2.append('text')
+        .attr('x', 10)
+        .attr('y', 10)
+        .attr('font-size', 16)
+
+
+
 	function update(data){ 
         stackdata = data;
-        const keys=selected? [selected] :data.columns.slice(1)
+        const keys=selected? [selected] : stackdata.columns.slice(1)
 
 
         let stack = d3.stack()
@@ -69,6 +73,7 @@ export default function StackedAreaChart(container) {
         .offset(d3.stackOffsetNone);
 
         let stacked = stack(data)
+        console.log(stacked)
 
         console.log(data)
 
@@ -120,10 +125,11 @@ export default function StackedAreaChart(container) {
 
     function filterByDate(range){
 		xDomain = range;  // -- (3)
-		update(data); // -- (4)
+		update(stackdata); // -- (4)
 	}
     
 	return {
-		update
+        update,
+        filterByDate
 	}
 }
